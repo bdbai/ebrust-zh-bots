@@ -15,7 +15,9 @@ where
         code: String,
     ) -> EvalResponse<EvalProcessingResponse<EvalProcessingResponseImpl<R, P>>> {
         let full_code = format!(
-            "fn main() {{ let res = {{ {} }}; println!(\"{{res:?}}\"); }}",
+            "fn main() {{ let res = {{
+            {} 
+            }}; println!(\"{{res:?}}\"); }}",
             &code
         );
         let res = match self

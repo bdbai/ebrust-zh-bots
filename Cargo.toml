@@ -22,3 +22,6 @@ event-listener = "5"
 refinery = { git = "https://github.com/rust-db/refinery.git", features = [
     "rusqlite",
 ] }
+
+[patch.crates-io]
+h2 = { git = "https://github.com/hyperium/h2.git#07e528" }

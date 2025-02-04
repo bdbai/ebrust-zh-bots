@@ -97,7 +97,13 @@ where
             if text.is_empty() {
                 continue;
             }
-            if let Some(command) = text.strip_prefix("/bval") {
+            if let Some(mut command) = text.strip_prefix("/bval") {
+                if command.starts_with('@') {
+                    command = command
+                        .split_once(' ')
+                        .map(|(_, rest)| rest)
+                        .unwrap_or_default();
+                }
                 if let Err(e) = handler
                     .handle_new_message(chat_id, msg_id, msg_from.id, command.trim_start())
                     .await

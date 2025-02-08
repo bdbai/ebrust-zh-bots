@@ -1,3 +1,4 @@
+use htmlize::escape_text;
 use telegram_types::bot::types::{
     InlineKeyboardButton, InlineKeyboardButtonPressed, InlineKeyboardMarkup,
 };
@@ -8,7 +9,8 @@ pub(super) fn render_page_data(data: EvalPageData) -> (String, InlineKeyboardMar
     // TODO: trim into 4096 characters
     let text = format!(
         "<b>{}</b>\n<blockquote expandable><code>{}</code></blockquote>",
-        data.title, data.content
+        escape_text(data.title),
+        escape_text(data.content)
     );
     let keyboard = InlineKeyboardMarkup {
         inline_keyboard: vec![vec![

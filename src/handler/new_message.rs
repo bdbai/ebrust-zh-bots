@@ -40,7 +40,7 @@ where
                         "sendMessage",
                         &SendMessage::new(
                             ChatTarget::Id(chat_id),
-                            format!("<i>Fatal error: {}</i>", e),
+                            format!("<i>Fatal error: {}</i>", htmlize::escape_text(e)),
                         )
                         .parse_mode(ParseMode::HTML)
                         .reply(user_msg_id),
@@ -121,7 +121,7 @@ async fn continue_processing(
                     &EditMessageText::new(
                         ChatTarget::Id(chat_id),
                         eval_msg_id,
-                        format!("<i>Error: {}</i>", e),
+                        format!("<i>Error: {}</i>", htmlize::escape_text(e)),
                     )
                     .parse_mode(ParseMode::HTML),
                 )

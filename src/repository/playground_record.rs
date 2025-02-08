@@ -81,6 +81,7 @@ pub struct CreateRevisionUpsertRecordResult {
 pub trait IPlaygroundRecordRepository {
     fn create_revision_upsert_record(
         &self,
+        chat_id: i64,
         user_msg_id: i64,
         created_by_user_id: i64,
         rendered_code: String,
@@ -127,6 +128,7 @@ pub trait IPlaygroundRecordRepository {
 impl IPlaygroundRecordRepository for Repository {
     async fn create_revision_upsert_record(
         &self,
+        chat_id: i64,
         user_msg_id: i64,
         created_by_user_id: i64,
         rendered_code: String,
@@ -134,9 +136,9 @@ impl IPlaygroundRecordRepository for Repository {
     ) -> RepositoryResult<CreateRevisionUpsertRecordResult> {
         const INSERT_REVISION_SQL: &str =
             "INSERT INTO `playground_revision` (`record_id`, `rendered_code`) VALUES (0, ?)";
-        const UPSERT_RECORD_SQL: &str = "INSERT INTO `playground_record` (`user_msg_id`, `created_by_user_id`, `revision_id`, `page_state`)
-            VALUES (?1, ?2, ?3, ?4)
-            ON CONFLICT (`user_msg_id`)
+        const UPSERT_RECORD_SQL: &str = "INSERT INTO `playground_record` (`chat_id`, `user_msg_id`, `created_by_user_id`, `revision_id`, `page_state`)
+            VALUES (?1, ?2, ?3, ?4, ?5)
+            ON CONFLICT (`user_msg_id`, `chat_id`)
                 DO UPDATE SET `revision_id` = excluded.revision_id, `page_state` = excluded.page_state
             RETURNING `id`, `eval_msg_id`, `page_state`";
         const UPDATE_REVISION_RECORD_ID_SQL: &str =
@@ -154,6 +156,7 @@ impl IPlaygroundRecordRepository for Repository {
                         PlaygroundRecordRevisionId::try_from(tx.last_insert_rowid()).unwrap();
                     let (record_id, eval_msg_id, page_state) = upsert_record_stmt.query_row(
                         params![
+                            chat_id,
                             user_msg_id,
                             created_by_user_id,
                             revision_id,

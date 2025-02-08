@@ -25,6 +25,7 @@ pub trait IController {
     type RevertDeleteEvalImpl: RevertDeleteEval;
     fn new_eval(
         &self,
+        chat_id: i64,
         user_msg_id: i64,
         created_by_user_id: i64,
         code: String,
@@ -168,11 +169,12 @@ where
 
     fn new_eval(
         &self,
+        chat_id: i64,
         user_msg_id: i64,
         created_by_user_id: i64,
         code: String,
     ) -> impl Future<Output = EvalResponse<EvalProcessingResponse<Self::EvalProcessingImpl>>> {
-        self.new_eval(user_msg_id, created_by_user_id, code)
+        self.new_eval(chat_id, user_msg_id, created_by_user_id, code)
     }
 
     fn request_delete_eval(

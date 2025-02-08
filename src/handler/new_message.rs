@@ -30,8 +30,9 @@ where
         let command = command.to_owned();
         let res = self
             .controller
-            .new_eval(user_msg_id.0, user_id.0, command.clone())
+            .new_eval(chat_id.0, user_msg_id.0, user_id.0, command.clone())
             .await;
+        let chat_target = ChatTarget::Id(chat_id);
         let mut processing = match res {
             EvalResponse::Processing(p) => p,
             EvalResponse::Err(e) => {
@@ -39,7 +40,7 @@ where
                     .call_method_with_param::<_, Message>(
                         "sendMessage",
                         &SendMessage::new(
-                            ChatTarget::Id(chat_id),
+                            chat_target.clone(),
                             format!("<i>Fatal error: {}</i>", htmlize::escape_text(e)),
                         )
                         .parse_mode(ParseMode::HTML)
@@ -57,7 +58,7 @@ where
                         .call_method_with_param::<_, Message>(
                             "editMessageText",
                             &EditMessageText::new(
-                                ChatTarget::Id(chat_id),
+                                chat_target.clone(),
                                 MessageId(eval_msg_id),
                                 PROCESSING_MESSAGE_TEXT,
                             )
@@ -75,7 +76,7 @@ where
                         .client
                         .call_method_with_param::<_, Message>(
                             "sendMessage",
-                            &SendMessage::new(ChatTarget::Id(chat_id), PROCESSING_MESSAGE_TEXT)
+                            &SendMessage::new(chat_target.clone(), PROCESSING_MESSAGE_TEXT)
                                 .parse_mode(ParseMode::HTML)
                                 .reply(user_msg_id),
                         )
@@ -91,7 +92,8 @@ where
         let cancel_event = self.cancel_event.listen();
         spawn(async move {
             let res =
-                continue_processing(chat_id, eval_msg_id, client, processing, cancel_event).await;
+                continue_processing(chat_target, eval_msg_id, client, processing, cancel_event)
+                    .await;
             if let Err(e) = res {
                 error!("Error in continue_processing: {:?}", e);
             }
@@ -102,7 +104,7 @@ where
 }
 
 async fn continue_processing(
-    chat_id: ChatId,
+    chat_target: ChatTarget<'static>,
     eval_msg_id: i64,
     client: Arc<TgClient>,
     wait_for_eval_result: impl WaitForEvalResult,
@@ -119,7 +121,7 @@ async fn continue_processing(
                 .call_method_with_param::<_, Message>(
                     "editMessageText",
                     &EditMessageText::new(
-                        ChatTarget::Id(chat_id),
+                        chat_target,
                         eval_msg_id,
                         format!("<i>Error: {}</i>", htmlize::escape_text(e)),
                     )
@@ -134,7 +136,7 @@ async fn continue_processing(
     client
         .call_method_with_param::<_, Message>(
             "editMessageText",
-            &EditMessageText::new(ChatTarget::Id(chat_id), eval_msg_id, text)
+            &EditMessageText::new(chat_target, eval_msg_id, text)
                 .parse_mode(ParseMode::HTML)
                 .reply_markup(keyboard),
         )

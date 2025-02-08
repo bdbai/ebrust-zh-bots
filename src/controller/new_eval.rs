@@ -10,6 +10,7 @@ where
 {
     pub(super) async fn new_eval(
         &self,
+        chat_id: i64,
         user_msg_id: i64,
         created_by_user_id: i64,
         code: String,
@@ -23,6 +24,7 @@ where
         let res = match self
             .repo
             .create_revision_upsert_record(
+                chat_id,
                 user_msg_id,
                 created_by_user_id,
                 full_code.clone(),

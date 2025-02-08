@@ -97,10 +97,10 @@ where
             if text.is_empty() {
                 continue;
             }
-            if let Some(mut command) = text.strip_prefix("/bval") {
+            if let Some(mut command) = text.trim().strip_prefix("/bval") {
                 if command.starts_with('@') {
                     command = command
-                        .split_once(' ')
+                        .split_once([' ', '\r', '\n'])
                         .map(|(_, rest)| rest)
                         .unwrap_or_default();
                 }
